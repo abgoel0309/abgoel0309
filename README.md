@@ -15,29 +15,41 @@ live, writes the brief, scores its own prior calls, and commits everything here.
   6:00 AM ET, Mon–Fri
           │
           ▼
-  ┌───────────────────┐
+  ┌─────────────────┐
   │  Claude Routine   │  fresh session, live web access
   └─────────┬─────────┘
-            │  reads
+            │  clones this repo (read-only)
             ▼
   prompts/daily-brief.md ──── the procedure
   config/sources.md ───────── what to sweep
   config/brief-template.md ── structure + rigor rules
-  THEMES.md ───────────────── open calls it's accountable to
-  briefs/ (last 2) ────────── yesterday's context
+  THEMES.md ─────────────── seed standing questions
+  previous brief (Artifact) ─ open theses + scorecard
             │
             │  sweeps ~25–40 sources across 4 tiers
             ▼
-  briefs/YYYY-MM-DD.md + briefs/latest.md + updated THEMES.md
-            │
-            ▼
-      committed & pushed
+  publishes:  Market Brief <date>   — an Artifact, stable URL
+  notifies:   push + email summary
 ```
 
 No API keys, no secrets, no CI minutes — the Routine runs on your existing
 Claude access.
 
----
+### Why the output is an Artifact and not a commit
+
+Scheduled sessions can **read** this repo but cannot **write** to it: a
+trigger-fired session carries no attached repo source, so `git push` returns
+`403: repo not in session's authorized set`. This was verified with a
+diagnostic run, not assumed.
+
+So the repo holds the **inputs** — the runbook, the source list, the standards —
+and each day's **output** is a published Artifact with its own URL. Continuity
+works by reading the previous day's brief rather than a committed file, which is
+why section 11 restates every open thesis in full instead of referring back.
+
+To get briefs committed here instead, create the Routine from the claude.ai
+Routines UI with this repository attached — that grants the write access the
+MCP-created trigger can't.
 
 ## What's in a brief
 
@@ -98,27 +110,27 @@ Defined in `config/brief-template.md`. The important ones:
 
 ## It has a memory
 
-`THEMES.md` carries open theses, their falsifiers, and a scorecard of what held
-up and what broke — including the misses, deliberately. Each run reads it,
-scores the open calls against the day's evidence, and updates it.
+Every brief carries open theses with concrete falsifiers and a scorecard of what
+held up and what broke — including the misses, deliberately. Each run reads the
+previous brief and scores those calls against the day's evidence.
+
+Because the run can't write back to this repo, **the brief is the memory**:
+section 11 restates each open thesis in full (claim, mechanism, falsifier,
+confidence) so the next run can pick it up cold. `THEMES.md` here is the seed —
+standing questions and anything you add by hand.
 
 This is what separates the archive from a pile of daily notes. Without the
 scorecard there's no feedback loop and the brief never gets better at anything.
 
----
-
 ## Repo layout
 
 ```
-prompts/daily-brief.md       Execution runbook — the 6 steps a run follows
+prompts/daily-brief.md       Execution runbook — the steps a run follows
 config/sources.md            Source universe, tiered, with links
 config/brief-template.md     Analysis standards + 12-section structure
-briefs/YYYY-MM-DD.md         The archive, one file per day
-briefs/latest.md             Copy of the most recent brief
-THEMES.md                    Open theses, scorecard, standing questions
+THEMES.md                    Seed standing questions; hand-edited theses
+briefs/                      For briefs you choose to archive by hand
 ```
-
----
 
 ## Changing it
 
@@ -136,6 +148,10 @@ brief reflects it. No redeploy.
 **Adding a watchlist:** add a section to `config/brief-template.md` listing your
 tickers and a dedicated section in the output structure. The run will pick it up
 the next morning.
+
+**Archiving to the repo:** briefs are published as Artifacts, not committed.
+Either recreate the Routine from the claude.ai Routines UI with this repo
+attached, or paste briefs you want to keep into `briefs/YYYY-MM-DD.md`.
 
 **Schedule:** currently `0 10 * * 1-5` UTC = 6:00 AM ET during daylight time.
 UTC cron doesn't follow DST, so this becomes 5:00 AM ET in winter. Ask Claude to

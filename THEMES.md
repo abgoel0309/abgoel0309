@@ -4,8 +4,13 @@ The brief's memory. Without this file each day starts cold and nothing
 compounds; with it, the archive gets more useful over time because you can see
 which reads held up and which didn't.
 
-Updated by every daily run (Step 4 of the runbook). Edit by hand whenever you
-want to add, kill, or reweight a thesis.
+**How this file is used.** Scheduled runs can read this repo but cannot write to
+it, so a run does *not* update this file. It reads it as the seed — the standing
+questions below, plus any thesis you add by hand — and carries the live thesis
+log forward inside each published brief's section 11 instead.
+
+Edit it by hand whenever you want to plant, kill, or reweight a thesis; the next
+morning's run will pick up the change.
 
 ---
 

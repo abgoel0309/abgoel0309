@@ -1,27 +1,24 @@
-# Brief Archive
+# Brief Archive (manual)
 
-One file per trading day: `YYYY-MM-DD.md`. `latest.md` is a copy of the most
-recent brief, so there's a stable path to read or link.
+Scheduled runs publish each brief as an **Artifact**, not as a commit here —
+trigger-fired sessions can read this repo but cannot push to it (verified: the
+remote returns `403: repo not in session's authorized set`).
 
-Written by the scheduled daily run — see `prompts/daily-brief.md` for the
-procedure and `config/brief-template.md` for the structure.
+This directory is for briefs you choose to keep in the repo by hand: save one as
+`YYYY-MM-DD.md` and it becomes greppable alongside the config that produced it.
 
-## Reading the archive
+To have runs commit here automatically, recreate the Routine from the claude.ai
+Routines UI with this repository attached, then restore the commit step in
+`prompts/daily-brief.md`.
+
+## Finding past briefs
+
+Published briefs are titled `Market Brief <Month D, YYYY>`. List them from
+Claude with the Artifacts gallery, or ask Claude to pull a specific date.
+
+## Reading an archive you keep here
 
 ```bash
-# Today
-cat briefs/latest.md
-
-# Track a theme across time
-grep -l "term premium" briefs/*.md
-
-# What was said about a date
-cat briefs/2026-09-21.md
-
-# How a thesis evolved
-grep -A3 "T-001" briefs/*.md
+grep -l "term premium" briefs/*.md      # track a theme over time
+cat briefs/2026-09-21.md                # a specific day
 ```
-
-The archive is meant to be grepped. When a market move surprises you, the
-useful question is usually "what did I think about this two weeks ago" — and
-that only has an answer if the history is intact. Don't prune it.
