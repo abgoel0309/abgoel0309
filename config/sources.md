@@ -164,12 +164,69 @@ change; if a figure can't be verified, say so rather than estimating.
 
 ---
 
-## Access notes
+## Access reality (verified, not assumed)
 
-- Prefer official primary pages over aggregators when both are available.
-- Many outlets are paywalled. Use the free summary or a reputable secondary
-  report, and label it as such. Do not guess at paywalled content.
+This environment's network policy blocks general outbound HTTPS. Probed
+directly: `bls.gov`, `home.treasury.gov`, `federalreserve.gov`, `atlantafed.org`,
+`fred.stlouisfed.org`, `sec.gov`, `bea.gov`, `census.gov`, `ecb.europa.eu`,
+`bis.org`, `imf.org`, `eia.gov`, `reuters.com`, `cnbc.com` and every other
+research domain tested return `403` at CONNECT.
+
+**What this means in practice:**
+
+| Method | Works? |
+|---|---|
+| `curl` / direct HTTPS from Bash | **No** — 403 at the proxy |
+| `WebFetch` | **No** — `EGRESS_BLOCKED` on every research domain tested |
+| `WebSearch` | **Yes** — routes server-side, returns current data |
+
+So **`WebSearch` is the only research channel.** The tables above remain the
+right source universe, but they are reached through search rather than by
+fetching the release pages.
+
+### Technique that recovers most of the loss
+
+Use `WebSearch`'s `allowed_domains` to scope a query to primary sources. This
+is verified working — it returns Fed, FRED and Atlanta Fed content directly:
+
+```
+WebSearch(
+  query: "Atlanta Fed GDPNow latest estimate third quarter",
+  allowed_domains: ["atlantafed.org", "federalreserve.gov", "stlouisfed.org"]
+)
+```
+
+Scope by tier:
+- **Rates / Fed:** `federalreserve.gov`, `stlouisfed.org`, `newyorkfed.org`, `atlantafed.org`
+- **Data prints:** `bls.gov`, `bea.gov`, `census.gov`
+- **Treasury / fiscal:** `treasury.gov`, `fiscaldata.treasury.gov`, `cbo.gov`
+- **Regulatory:** `sec.gov`, `cftc.gov`, `federalregister.gov`
+- **Global:** `ecb.europa.eu`, `bankofengland.co.uk`, `boj.or.jp`, `bis.org`, `imf.org`
+
+### Consequences for the brief
+
+1. **A search snippet is weaker evidence than a release page.** Treat a figure
+   from search as Tier 1 only when it is scoped to the primary domain *and*
+   corroborated. Otherwise it is Tier 2 — attributed reporting.
+2. **Cross-verify every headline number against at least two independent
+   sources.** Search indexes go stale and mix up release dates. When sources
+   conflict, report the conflict and the range rather than silently picking —
+   a run that quietly picked one of a conflicting pair would have printed a
+   wrong CPI figure with full confidence.
+3. **Never paper over a gap.** If a figure can't be pinned down, `[unverified]`
+   or a range. The coverage log names what couldn't be reached.
+
+### Lifting the restriction
+
+The block is the environment's network policy, chosen when the environment was
+created — not a Claude limitation. Allowlisting the domains above would let
+`WebFetch` hit primary release pages directly and materially improve accuracy.
+See https://code.claude.com/docs/en/claude-code-on-the-web
+
+### General notes
+
+- Prefer official primary domains over aggregators when scoping a search.
+- Many outlets are paywalled. Use the free summary or reputable secondary
+  reporting, and label it as reported rather than read firsthand.
 - Government release calendars are the backbone of the "what's ahead" section —
-  check BLS, BEA, and Census schedules rather than relying on memory.
-- When a source is unreachable on a given day, note the gap in the brief's
-  coverage log instead of silently dropping it.
+  search BLS, BEA, and Census schedules rather than relying on memory.

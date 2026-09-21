@@ -49,7 +49,9 @@ Then recover the running memory:
 If no prior brief exists, this is the first run: start the thesis log from the
 standing questions in `THEMES.md`.
 
-Today's date is today's date in **US Eastern**.
+Today's date is today's date in **US Eastern**. Get the generated timestamp
+from `date`, don't estimate it — a brief whose own header time is wrong
+undermines every other figure in it.
 
 ---
 
@@ -83,11 +85,37 @@ equity, macro, rates, and crypto communities. Check prediction market odds.
 and chase that specifically. The failure mode of a sweep is confirming what you
 already expected rather than finding what you didn't.
 
+### Sweep mechanics — read this before searching
+
+**`WebSearch` is your only research channel.** This environment's network
+policy blocks general outbound HTTPS: `curl` and `WebFetch` both fail with 403 /
+`EGRESS_BLOCKED` on every research domain, government sources included. Do not
+burn calls rediscovering this.
+
+Recover most of the lost precision with `allowed_domains`, which scopes a search
+to primary sources and is verified working:
+
+```
+WebSearch(query: "...", allowed_domains: ["federalreserve.gov", "stlouisfed.org"])
+```
+
+`config/sources.md` lists the domain sets to scope by. Use them for anything you
+would otherwise want to read off a release page.
+
 ### Sweep discipline
 - Capture the **link and the figure** as you go. Reconstructing citations after
   the fact is where fabrication creeps in.
-- When two sources conflict, note it and prefer the primary. If both are
-  primary, report the conflict — it's usually interesting.
+- **Cross-verify every headline number against two independent sources.** Search
+  indexes go stale and confuse release dates. This is not optional caution: it
+  is the check that stops a wrong CPI print going out with full confidence.
+- When sources conflict, **report the conflict and the range**. Never silently
+  pick one. Log it in section 12.
+- A figure from a search snippet is Tier 1 only if the search was scoped to the
+  primary domain *and* it is corroborated. Otherwise it's Tier 2 — attributed
+  reporting, labeled as such.
+- Discard sources that read as content-farm or auto-generated output, even when
+  they carry the precise number you want. A plausible-looking fabricated level
+  is worse than `[unverified]`.
 - A source being unreachable is a log entry, not licence to fill the gap from
   memory.
 
