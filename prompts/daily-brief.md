@@ -31,6 +31,28 @@ Today's brief is `briefs/YYYY-MM-DD.md` using today's date in US Eastern.
 
 ---
 
+## Step 0.5 — Preflight: can you deliver?
+
+**Do this before spending the research budget.** A sweep costs several minutes;
+discovering afterwards that the result can't be saved wastes all of it and, worse,
+loses the analysis.
+
+```bash
+git push --dry-run origin "$(git branch --show-current)" 2>&1 | tail -5
+```
+
+Record the answer as `PUSH_OK = yes|no`. It decides how Step 5 delivers.
+
+- `PUSH_OK = yes` — normal path: commit and push.
+- `PUSH_OK = no` — the scheduled session lacks repo write credentials. **Do not
+  abort.** Continue the full run and deliver through the fallback channels in
+  Step 5. The analysis is the valuable part; the transport is incidental.
+
+Either way, say which path you took in the final reply so a persistently broken
+push surfaces on day one instead of quietly producing nothing for a week.
+
+---
+
 ## Step 1 — Sweep
 
 Budget roughly 25–40 searches and fetches. Work in parallel where possible —
@@ -116,25 +138,63 @@ Hold to the analysis standards in Part 1 of that file, especially:
 
 ---
 
-## Step 5 — Commit and push
+## Step 5 — Deliver
+
+Delivery is layered so the brief survives any single channel failing. Work
+through every layer that applies.
+
+### Layer 1 — Always: publish as an Artifact
+
+Regardless of `PUSH_OK`, publish the brief as an Artifact. It needs no git
+credentials, produces a stable link, and reads well on a phone — which is where
+a 6am brief actually gets read.
+
+Write the brief to an HTML page and publish it with the Artifact tool, titled
+`Market Brief <Month D, YYYY>`. Keep it clean and readable: clear section
+headings, the twelve sections in order, generous line height, working in both
+light and dark mode. Load the `artifact-design` skill before writing the page.
+
+Record the returned URL — it goes in the reply.
+
+### Layer 2 — If `PUSH_OK = yes`: commit to the repo
 
 ```bash
 git add briefs/ THEMES.md
 git commit -m "Daily brief: YYYY-MM-DD"
-git push -u origin "$(git branch --show-current)"
+git push origin "$(git branch --show-current)"
 ```
 
-Push to the branch selected in Step 0 — never to a different one. If the push
+Push to the branch selected in Step 0 — never a different one. If the push
 races with another commit, `git pull --rebase` and retry. On network failure,
 retry up to 4 times with exponential backoff (2s, 4s, 8s, 16s).
 
----
+If the push fails here despite the preflight passing, fall through to Layer 3
+rather than discarding the work.
+
+### Layer 3 — If `PUSH_OK = no`: put the full brief in the reply
+
+The reply is delivered by push and email notification, so it is the channel of
+last resort that always works. Include the **complete brief text**, not a
+summary — an un-saved brief that exists only as a summary is a lost brief.
+
+Also state plainly, at the top of the reply, that the repo commit failed and
+that `THEMES.md` could not be updated, so the next run starts without today's
+scorecard. That degradation is worth flagging every time it happens: it is the
+thing that quietly breaks the memory the whole system depends on.
 
 ## Step 6 — Report back
 
-Reply with a short summary: the one-liner, the top 2–3 items, and the link to
-the committed file. Keep it to something readable on a phone — the full brief
-is in the repo for whoever wants the detail.
+Reply with a short, phone-readable summary:
+
+- The one-liner
+- The top 2–3 items
+- The Artifact link
+- The committed file path, if Layer 2 succeeded
+- **Which delivery path was used**, and any degradation (push failed, sources
+  unreachable, thin coverage)
+
+Keep it short. The full brief lives in the Artifact and the repo for whoever
+wants the detail — the reply is the headline, not the document.
 
 ---
 
@@ -152,5 +212,6 @@ the days that matter.
 **Can't verify a market level**: mark it `[unverified]` and move on. Do not
 substitute a remembered figure.
 
-**Push rejected**: pull with rebase and retry. If it still fails, report the
-failure with the brief's content inline so the analysis isn't lost.
+**Push rejected or unavailable**: pull with rebase and retry once. If it still
+fails, deliver via Layer 1 and Layer 3 and say so explicitly. Never end a run
+having produced analysis that reached nobody.
