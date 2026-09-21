@@ -7,7 +7,19 @@ here; everything the run needs is in this repo.
 
 ## Step 0 — Orient
 
-1. `git pull` the default branch so you have the latest config and archive.
+1. Select the working branch and pull the latest config and archive:
+   ```bash
+   cd /home/user/abgoel0309 && git fetch origin
+   # Prefer the default branch once the workflow has been merged there;
+   # fall back to the branch the files currently live on.
+   if git cat-file -e origin/main:prompts/daily-brief.md 2>/dev/null; then
+     git checkout main && git pull origin main
+   else
+     git checkout claude/daily-market-summary-6dbolq
+     git pull origin claude/daily-market-summary-6dbolq
+   fi
+   ```
+   Everything below reads from, and commits to, that branch.
 2. Read `config/sources.md` — the source universe for this run.
 3. Read `config/brief-template.md` — structure and the analysis standards.
 4. Read `THEMES.md` — open theses and calls you are accountable to.
@@ -109,12 +121,12 @@ Hold to the analysis standards in Part 1 of that file, especially:
 ```bash
 git add briefs/ THEMES.md
 git commit -m "Daily brief: YYYY-MM-DD"
-git push -u origin <default-branch>
+git push -u origin "$(git branch --show-current)"
 ```
 
-Push to the repository's default branch. If the push races with another commit,
-pull with rebase and retry. On network failure, retry up to 4 times with
-exponential backoff (2s, 4s, 8s, 16s).
+Push to the branch selected in Step 0 — never to a different one. If the push
+races with another commit, `git pull --rebase` and retry. On network failure,
+retry up to 4 times with exponential backoff (2s, 4s, 8s, 16s).
 
 ---
 
